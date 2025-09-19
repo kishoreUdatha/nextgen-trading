@@ -1,0 +1,37 @@
+{
+  "title": "Trading Platform - OMS & Outbox",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Orders Placed/Rejected/Filled/Cancelled",
+      "targets": [
+        {
+          "expr": "sum(rate(oms_orders_placed_total[1m]))"
+        },
+        {
+          "expr": "sum(rate(oms_orders_rejected_total[1m]))"
+        },
+        {
+          "expr": "sum(rate(oms_orders_filled_total[1m]))"
+        },
+        {
+          "expr": "sum(rate(oms_orders_cancelled_total[1m]))"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Outbox Attempts",
+      "targets": [
+        {
+          "expr": "sum(rate(jvm_classes_loaded[1m]))",
+          "legendFormat": "placeholder"
+        }
+      ],
+      "description": "Replace with custom outbox metrics if added later."
+    }
+  ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1
+}

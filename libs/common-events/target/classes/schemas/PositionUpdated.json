@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "netQty": {
+      "type": "integer"
+    },
+    "avgPrice": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "userId",
+    "symbol",
+    "netQty"
+  ]
+}

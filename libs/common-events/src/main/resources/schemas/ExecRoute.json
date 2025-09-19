@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "integer"
+    },
+    "tif": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "orderId",
+    "symbol"
+  ]
+}

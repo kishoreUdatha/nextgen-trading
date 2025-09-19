@@ -1,0 +1,40 @@
+{
+  "title": "Postgres Overview",
+  "schemaVersion": 36,
+  "version": 1,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Connections",
+      "targets": [
+        {
+          "expr": "pg_stat_activity_count"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Xact Commit/Rollback",
+      "targets": [
+        {
+          "expr": "rate(pg_stat_database_xact_commit[5m])"
+        },
+        {
+          "expr": "rate(pg_stat_database_xact_rollback[5m])"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Tuples In/Out",
+      "targets": [
+        {
+          "expr": "rate(pg_stat_database_tup_fetched[5m])"
+        },
+        {
+          "expr": "rate(pg_stat_database_tup_returned[5m])"
+        }
+      ]
+    }
+  ]
+}

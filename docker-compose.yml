@@ -1,0 +1,227 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports: ["2181:2181"]
+    volumes:
+      - zkdata:/var/lib/zookeeper/data
+      - zklogs:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: kafka
+    depends_on: [ zookeeper ]
+    ports:
+      - "9092:9092"   # in-cluster
+      - "29092:29092" # from host
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_OPTS: -Djava.net.preferIPv4Stack=true
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      kafka: { condition: service_healthy }
+    entrypoint: ["/bin/bash","-c"]
+    command: |
+      set -e
+      P=${TOPIC_PREFIX:-tp}
+      for t in \
+        $$P.orders.placed $$P.orders.validated $$P.orders.routed $$P.orders.updated \
+        $$P.risk.blocks $$P.risk.approved \
+        $$P.trades.booked $$P.positions.updated \
+        $$P.md.ltp $$P.md.pricebands \
+        $$P.exec.route $$P.exec.reports \
+        $$P.outbox.events ; do
+        kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --partitions 6 --replication-factor 1 --topic $$t
+      done
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: trading_db
+    ports: ["55432:5432"] # avoid clobbering host 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./ops/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trading_db -h 127.0.0.1"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    ports: ["8124:8123","9001:9000"] # avoid host 8123/9000 conflicts
+    volumes:
+      - ./ops/clickhouse.sql:/docker-entrypoint-initdb.d/clickhouse.sql:ro
+
+  # === Microservices (built via Dockerfile.svc) ===
+  oms:
+    build:
+      context: .
+      dockerfile: Dockerfile.svc
+      args: { ARTIFACT: oms }
+    image: local/oms:0.1.0
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/trading_db?currentSchema=oms
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP: kafka:9092
+      TOPIC_PREFIX: ${TOPIC_PREFIX:-tp}
+    ports: ["8081:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  risk:
+    build:
+      context: .
+      dockerfile: Dockerfile.svc
+      args: { ARTIFACT: risk }
+    image: local/risk:0.1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP: kafka:9092
+      TOPIC_PREFIX: ${TOPIC_PREFIX:-tp}
+    ports: ["8082:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile.svc
+      args: { ARTIFACT: portfolio }
+    image: local/portfolio:0.1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP: kafka:9092
+      TOPIC_PREFIX: ${TOPIC_PREFIX:-tp}
+    ports: ["8083:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  marketdata:
+    build:
+      context: .
+      dockerfile: Dockerfile.svc
+      args: { ARTIFACT: marketdata }
+    image: local/marketdata:0.1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP: kafka:9092
+      TOPIC_PREFIX: ${TOPIC_PREFIX:-tp}
+    ports: ["8084:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  exec-adapter:
+    build:
+      context: .
+      dockerfile: Dockerfile.svc
+      args: { ARTIFACT: exec-adapter }
+    image: local/exec-adapter:0.1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP: kafka:9092
+      TOPIC_PREFIX: ${TOPIC_PREFIX:-tp}
+    ports: ["8085:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  poison-replayer:
+    build:
+      context: .
+      dockerfile: Dockerfile.svc
+      args: { ARTIFACT: poison-replayer }
+    image: local/poison-replayer:0.1.0
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+      TOPIC_PREFIX: ${TOPIC_PREFIX:-tp}
+    ports: [ "8090:8080" ]
+    depends_on:
+      kafka: { condition: service_healthy }
+
+  # --- Monitoring ---
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports: [ "9090:9090" ]
+    depends_on:
+      kafka: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: [ "3000:3000" ]
+    depends_on: [ prometheus ]
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    command: ["--kafka.server=kafka:9092"]
+    ports: [ "9308:9308" ]
+    depends_on: [ kafka ]
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@postgres:5432/postgres?sslmode=disable"
+    ports: [ "9187:9187" ]
+    depends_on: [ postgres ]
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes:
+      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports: [ "9093:9093" ]
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml"]
+
+volumes:
+  pgdata: {}
+  kafka_data: {}
+  zkdata: { }
+  zklogs: { }

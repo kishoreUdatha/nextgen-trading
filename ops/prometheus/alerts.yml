@@ -1,0 +1,31 @@
+groups:
+- name: trading-platform
+  rules:
+  - alert: HighConsumerLag
+    expr: max_over_time(kafka_consumergroup_lag[5m]) > 1000
+    for: 5m
+    labels: { severity: warning }
+    annotations:
+      summary: "Kafka consumer lag high"
+      description: "Consumer lag > 1000 for 5m."
+  - alert: OutboxFailedRate
+    expr: rate(trading_outbox_failed_total[5m]) > 0
+    for: 2m
+    labels: { severity: critical }
+    annotations:
+      summary: "Outbox FAILED rate > 0"
+      description: "Some outbox messages are failing; check dispatcher & poison topics."
+  - alert: PoisonTopicSurge
+    expr: increase(trading_poison_requeued_total[5m]) > 50
+    for: 1m
+    labels: { severity: warning }
+    annotations:
+      summary: "Poison messages surge"
+      description: "Requeues in last 5m exceeded 50."
+  - alert: WalletLowBalance
+    expr: trading_wallet_balance_min < 50000
+    for: 5m
+    labels: { severity: warning }
+    annotations:
+      summary: "Wallet low balance for at least one user"
+      description: "Min wallet balance dropped below threshold."

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata: { name: exec-adapter }
+spec:
+  selector: { app: exec-adapter }
+  ports:
+    - name: http
+      port: 8085
+      targetPort: 8085

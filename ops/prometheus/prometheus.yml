@@ -1,0 +1,31 @@
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'spring'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - 'oms:8081'
+          - 'risk:8082'
+          - 'portfolio:8083'
+          - 'marketdata:8084'
+          - 'exec-adapter:8085'
+          - 'outbox-dispatcher:8080'
+
+  - job_name: 'kafka_exporter'
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: 'postgres_exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']

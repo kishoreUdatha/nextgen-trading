@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1.7
+# Dockerfile.svc
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+WORKDIR /src
+
+ARG ARTIFACT
+ARG MODULE=services/${ARTIFACT}
+
+COPY . .
+
+# Build from root so reactor includes all libs; produces *-exec.jar via spring-boot-maven-plugin
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -q -DskipTests -f pom.xml -pl :${ARTIFACT} -am clean package
+
+# ✅ EXTRA STEP: Check dependencies for logback
+# Fail build if logback-core/classic is NOT 1.5.x
+RUN mvn -q -f pom.xml dependency:tree \
+    | tee /tmp/deps.txt \
+    && grep -E "ch.qos.logback:logback-(classic|core):" /tmp/deps.txt \
+    | grep -v "1\.5\." \
+    && echo "❌ Wrong logback version detected, fix pom.xml!" && exit 1 \
+    || echo "✅ Logback version check passed"
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+ARG ARTIFACT
+ARG MODULE=services/${ARTIFACT}
+
+COPY --from=build /src/${MODULE}/target/*-exec.jar /app/app.jar
+
+EXPOSE 8080
+USER 1000
+ENTRYPOINT ["java","-jar","/app/app.jar"]

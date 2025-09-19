@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: OMS API
+  version: 0.2.0
+paths:
+  /api/v1/orders:
+    post:
+      summary: Place order
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequest'
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderResponse' }
+  /api/v1/orders/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderResponse' }
+  /api/v1/orders/{id}/modify:
+    post:
+      summary: Modify order (qty/price)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModifyOrderRequest' }
+      responses: {'200': { description: ok } }
+  /api/v1/orders/{id}/cancel:
+    post:
+      summary: Cancel order
+      responses: {'200': { description: cancelled } }
+components:
+  schemas:
+    PlaceOrderRequest:
+      type: object
+      properties:
+        symbol: { type: string }
+        segment: { type: string, enum: [CASH, INDEX_FUT, INDEX_OPT, STOCK_FUT, STOCK_OPT] }
+        side: { type: string, enum: [BUY, SELL] }
+        qty: { type: integer, minimum: 1 }
+        orderType: { type: string, enum: [MARKET, LIMIT, SL, SL_M] }
+        price: { type: number, format: double }
+        triggerPrice: { type: number, format: double }
+        tif: { type: string, enum: [DAY, IOC, GTC] }
+    ModifyOrderRequest:
+      type: object
+      properties:
+        qty: { type: integer, minimum: 1 }
+        price: { type: number, format: double }
+    OrderResponse:
+      type: object
+      properties:
+        orderId: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }

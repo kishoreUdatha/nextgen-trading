@@ -1,0 +1,6 @@
+com\example\common\events\TradeBookedEvent.class
+com\example\common\events\SchemaValidator.class
+com\example\common\events\RiskApprovedEvent.class
+com\example\common\events\OrderPlacedEvent.class
+com\example\common\events\RiskBlockedEvent.class
+com\example\common\events\ExecReportEvent.class

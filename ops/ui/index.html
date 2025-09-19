@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trading Ops UI</title>
+  <style>
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif; margin: 0; background: #0b0c10; color: #e5e7eb; }
+    header { padding: 16px 24px; background: #111827; display:flex; gap:16px; align-items:center; }
+    main { padding: 16px 24px; display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    section { background:#1f2937; border-radius: 12px; padding: 12px 16px; }
+    h2 { margin: 0 0 12px 0; font-size: 16px; color: #93c5fd; }
+    input, button, textarea { background:#111827; border:1px solid #374151; border-radius:8px; padding:8px; color:#e5e7eb; }
+    table { width:100%; border-collapse: collapse; font-size:14px; }
+    td,th { border-bottom:1px solid #374151; padding:6px; }
+    .pill { padding:2px 8px; border-radius:999px; background:#374151; }
+    .row { display:flex; gap:8px; align-items:center; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Trading Ops UI</strong>
+    <span class="pill" id="market"></span>
+  </header>
+  <main>
+    <section>
+      <h2>Live Orders</h2>
+      <div id="orders"></div>
+    </section>
+    <section>
+      <h2>Poison Messages</h2>
+      <div class="row">
+        <input id="poisonTopic" placeholder="tp.exec.route.poison" style="flex:1" />
+        <button onclick="loadPoison()">Load</button>
+      </div>
+      <textarea id="poisonList" style="width:100%;height:160px;margin-top:8px"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button onclick="bulkRequeue()">Bulk Requeue</button>
+      </div>
+    </section>
+    <section>
+      <h2>Risk Blocks (recent)</h2>
+      <div id="blocks"></div>
+    </section>
+    <section>
+      <h2>Wallet</h2>
+      <div class="row">
+        <input id="userId" placeholder="demo-user" />
+        <button onclick="loadWallet()">Load</button>
+      </div>
+      <pre id="wallet"></pre>
+    </section>
+  </main>
+
+  <script>
+    const ordersDiv = document.getElementById('orders');
+    const blocksDiv = document.getElementById('blocks');
+    const marketPill = document.getElementById('market');
+
+    // Orders WS
+    (function() {
+      try {
+        const ws = new WebSocket('ws://' + location.hostname + ':8081/ws/orders');
+        ws.onmessage = (ev) => {
+          const msg = JSON.parse(ev.data);
+          const el = document.createElement('div');
+          el.textContent = JSON.stringify(msg);
+          ordersDiv.prepend(el);
+        };
+      } catch (e) {}
+    })();
+
+    async function loadPoison(){
+      const topic = document.getElementById('poisonTopic').value || 'tp.exec.route.poison';
+      const res = await fetch('http://' + location.hostname + ':8090/api/v1/poison?topic=' + encodeURIComponent(topic) + '&n=50');
+      const arr = await res.json();
+      document.getElementById('poisonList').value = arr.join('\n');
+    }
+    async function bulkRequeue(){
+      const topic = document.getElementById('poisonTopic').value || 'tp.exec.route.poison';
+      const lines = document.getElementById('poisonList').value.split('\n').filter(Boolean);
+      const res = await fetch('http://' + location.hostname + ':8090/api/v1/poison/bulk-requeue', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ topic, payloads: lines })
+      });
+      alert('Requeued ' + (await res.json()).requeued);
+    }
+    async function loadWallet(){
+      const userId = document.getElementById('userId').value || 'demo-user';
+      const res = await fetch('http://' + location.hostname + ':8083/api/v1/wallet/' + userId);
+      document.getElementById('wallet').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    // Poll recent risk blocks
+    async function pollBlocks(){
+      try {
+        const res = await fetch('http://' + location.hostname + ':8082/api/v1/blocks/recent');
+        const arr = await res.json();
+        blocksDiv.innerHTML = '<pre>'+JSON.stringify(arr.slice(-50), null, 2)+'</pre>';
+      } catch (e) {}
+      setTimeout(pollBlocks, 3000);
+    }
+    pollBlocks();
+
+    // Market open/closed
+    async function markMarket(){
+      try {
+        const res = await fetch('http://' + location.hostname + ':8081/api/v1/market/status');
+        const j = await res.json();
+        marketPill.textContent = j.open ? 'MARKET OPEN' : 'MARKET CLOSED';
+      } catch(e){ marketPill.textContent = 'unknown'; }
+    }
+    markMarket();
+    setInterval(markMarket, 60000);
+  </script>
+</body>
+</html>

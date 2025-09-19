@@ -1,0 +1,9 @@
+image: local/marketdata:0.1.0
+replicaCount: 1
+port: 8084
+topicPrefix: tp
+kafkaBootstrap: kafka:9092
+postgresHost: postgres
+serviceMonitor:
+  enabled: true
+  interval: 30s

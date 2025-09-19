@@ -1,0 +1,43 @@
+{
+  "title": "JVM Overview",
+  "schemaVersion": 36,
+  "version": 1,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Heap Used",
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"heap\"}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "GC Pause",
+      "targets": [
+        {
+          "expr": "sum(rate(jvm_gc_pause_seconds_sum[5m]))"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Threads",
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "CPU Process",
+      "targets": [
+        {
+          "expr": "process_cpu_usage"
+        }
+      ]
+    }
+  ]
+}

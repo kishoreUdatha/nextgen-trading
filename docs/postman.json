@@ -1,0 +1,88 @@
+{
+  "info": {
+    "name": "Trading Platform Full Flows",
+    "_postman_id": "flows-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Wallet Topup (optional)",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8083/api/v1/wallet/demo-user/add/500000"
+      }
+    },
+    {
+      "name": "2. Place Order (OK path)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "http://localhost:8091/api/v1/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"symbol\": \"NIFTY\", \"segment\": \"CASH\", \"side\": \"BUY\", \"qty\": 1, \"orderType\": \"MARKET\", \"tif\": \"DAY\"}"
+        }
+      }
+    },
+    {
+      "name": "3. Place Order (Risk Block - Price Band)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "http://localhost:8091/api/v1/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"symbol\": \"NIFTY\", \"segment\": \"CASH\", \"side\": \"BUY\", \"qty\": 1, \"orderType\": \"LIMIT\", \"price\": 1000000, \"tif\": \"DAY\"}"
+        }
+      }
+    },
+    {
+      "name": "4. Modify Order (demo id)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "http://localhost:8091/api/v1/orders/{{orderId}}/modify",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"qty\": 2, \"price\": 101.0}"
+        }
+      }
+    },
+    {
+      "name": "5. Cancel Order (demo id)",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8091/api/v1/orders/{{orderId}}/cancel"
+      }
+    },
+    {
+      "name": "6. Get Positions",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8083/api/v1/positions"
+      }
+    },
+    {
+      "name": "7. Wallet Balance",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8083/api/v1/wallet/demo-user"
+      }
+    }
+  ]
+}

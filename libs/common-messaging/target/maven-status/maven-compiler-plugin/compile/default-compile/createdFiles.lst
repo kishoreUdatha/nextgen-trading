@@ -1,0 +1,2 @@
+com\example\common\messaging\ObjectMapperConfig.class
+com\example\common\messaging\KafkaTopics.class

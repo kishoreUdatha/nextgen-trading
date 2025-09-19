@@ -1,0 +1,51 @@
+name: CI
+on:
+  push: { branches: [ main ] }
+  pull_request: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Maven build
+        run: ./mvnw -q -DskipTests clean package
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images (local)
+        run: |
+          docker build -t local/oms:ci ./services/oms
+          docker build -t local/risk:ci ./services/risk
+          docker build -t local/portfolio:ci ./services/portfolio
+          docker build -t local/marketdata:ci ./services/marketdata
+          docker build -t local/exec-adapter:ci ./services/exec-adapter
+          docker build -t local/outbox-dispatcher:ci ./services/outbox-dispatcher
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm lint charts
+        run: |
+          helm lint ops/k8s/oms
+          helm lint ops/k8s/risk
+          helm lint ops/k8s/portfolio
+          helm lint ops/k8s/marketdata
+          helm lint ops/k8s/exec-adapter
+          helm lint ops/k8s/outbox-dispatcher
+
+      - name: Package Helm charts
+        run: |
+          helm package ops/k8s/oms -d dist/
+          helm package ops/k8s/risk -d dist/
+          helm package ops/k8s/portfolio -d dist/
+          helm package ops/k8s/marketdata -d dist/
+          helm package ops/k8s/exec-adapter -d dist/
+          helm package ops/k8s/outbox-dispatcher -d dist/

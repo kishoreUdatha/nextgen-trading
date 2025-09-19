@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "orderId",
+    "userId",
+    "symbol",
+    "qty"
+  ]
+}

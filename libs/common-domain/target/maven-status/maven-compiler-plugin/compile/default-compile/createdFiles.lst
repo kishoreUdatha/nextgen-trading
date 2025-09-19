@@ -1,0 +1,13 @@
+com\example\common\domain\events\Events$ExecReport.class
+com\example\common\domain\Enums$OrderStatus.class
+com\example\common\domain\Enums$TIF.class
+com\example\common\domain\Enums$Segment.class
+com\example\common\domain\Enums$Side.class
+com\example\common\domain\events\Events$OrderPlaced.class
+com\example\common\domain\events\Events.class
+com\example\common\domain\Enums.class
+com\example\common\domain\events\Events$RiskApproved.class
+com\example\common\domain\EnumsAliases.class
+com\example\common\domain\events\Events$TradeBooked.class
+com\example\common\domain\Enums$OrderType.class
+com\example\common\domain\events\Events$RiskBlocked.class

@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: oms }
+spec:
+  replicas: { { .Values.replicaCount } }
+  selector: { matchLabels: { app: oms } }
+  template:
+    metadata: { labels: { app: oms } }
+    spec:
+      containers:
+        - name: oms
+          image: { { .Values.image } }
+          ports: [ { containerPort: 8081 } ]
+          env:
+            - { name: POSTGRES_HOST, value: "{{ .Values.postgresHost }}" }
+            - { name: KAFKA_BOOTSTRAP, value: "{{ .Values.kafkaBootstrap }}" }
+            - { name: TOPIC_PREFIX, value: "{{ .Values.topicPrefix }}" }

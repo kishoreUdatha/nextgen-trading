@@ -1,0 +1,41 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: portfolio
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}/portfolio_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka:9092}
+    consumer:
+      group-id: portfolio
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+app:
+  topicPrefix: ${TOPIC_PREFIX:tp}
+
+# schema-registry
+# spring:
+#   kafka:
+#     properties:
+#       schema.registry.url: ${SCHEMA_REGISTRY_URL:http://schema-registry:8081}
+#     producer:
+#       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+#     consumer:
+#       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer

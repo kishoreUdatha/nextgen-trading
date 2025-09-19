@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: portfolio }
+spec:
+  replicas: { { .Values.replicaCount } }
+  selector: { matchLabels: { app: portfolio } }
+  template:
+    metadata: { labels: { app: portfolio } }
+    spec:
+      containers:
+        - name: portfolio
+          image: { { .Values.image } }
+          ports: [ { containerPort: 8083 } ]
+          env:
+            - { name: POSTGRES_HOST, value: "{{ .Values.postgresHost }}" }
+            - { name: KAFKA_BOOTSTRAP, value: "{{ .Values.kafkaBootstrap }}" }
+            - { name: TOPIC_PREFIX, value: "{{ .Values.topicPrefix }}" }

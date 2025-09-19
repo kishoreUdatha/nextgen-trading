@@ -1,0 +1,32 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: poison-replayer
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka:9092}
+    consumer:
+      group-id: poison-replayer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+app:
+  topicPrefix: ${TOPIC_PREFIX:tp}
+
+# schema-registry
+# spring:
+#   kafka:
+#     properties:
+#       schema.registry.url: ${SCHEMA_REGISTRY_URL:http://schema-registry:8081}
+#     producer:
+#       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+#     consumer:
+#       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer

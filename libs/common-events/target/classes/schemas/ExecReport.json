@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string"
+    },
+    "execId": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "orderId",
+    "execId",
+    "qty",
+    "price"
+  ]
+}

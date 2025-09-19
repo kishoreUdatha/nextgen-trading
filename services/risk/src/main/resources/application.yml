@@ -1,0 +1,35 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: risk
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka:9092}
+    consumer:
+      group-id: risk
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+app:
+  topicPrefix: ${TOPIC_PREFIX:tp}
+  mdBaseUrl: http://marketdata:8084
+
+# schema-registry
+# spring:
+#   kafka:
+#     properties:
+#       schema.registry.url: ${SCHEMA_REGISTRY_URL:http://schema-registry:8081}
+#     producer:
+#       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+#     consumer:
+#       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer

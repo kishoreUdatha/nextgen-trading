@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: risk }
+spec:
+  replicas: { { .Values.replicaCount } }
+  selector: { matchLabels: { app: risk } }
+  template:
+    metadata: { labels: { app: risk } }
+    spec:
+      containers:
+        - name: risk
+          image: { { .Values.image } }
+          ports: [ { containerPort: 8082 } ]
+          env:
+            - { name: POSTGRES_HOST, value: "{{ .Values.postgresHost }}" }
+            - { name: KAFKA_BOOTSTRAP, value: "{{ .Values.kafkaBootstrap }}" }
+            - { name: TOPIC_PREFIX, value: "{{ .Values.topicPrefix }}" }

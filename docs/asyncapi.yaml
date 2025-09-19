@@ -1,0 +1,244 @@
+{
+  "asyncapi": "2.6.0",
+  "info": {
+    "title": "Trading Platform Topics",
+    "version": "0.1.0"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "kafka": {
+      "url": "kafka:9092",
+      "protocol": "kafka"
+    }
+  },
+  "channels": {
+    "orders.placed": {
+      "publish": {
+        "message": {
+          "name": "OrderPlaced"
+        }
+      }
+    },
+    "risk.approved": {
+      "publish": {
+        "message": {
+          "name": "RiskApproved"
+        }
+      }
+    },
+    "risk.blocks": {
+      "publish": {
+        "message": {
+          "name": "RiskBlocked"
+        }
+      }
+    },
+    "exec.route": {
+      "publish": {
+        "message": {
+          "name": "ExecRoute"
+        }
+      }
+    },
+    "exec.reports": {
+      "publish": {
+        "message": {
+          "name": "ExecReport"
+        }
+      }
+    },
+    "trades.booked": {
+      "publish": {
+        "message": {
+          "name": "TradeBooked"
+        }
+      }
+    },
+    "positions.updated": {
+      "publish": {
+        "message": {
+          "name": "PositionUpdated"
+        }
+      }
+    },
+    "md.ltp": {
+      "publish": {
+        "message": {
+          "name": "Ltp"
+        }
+      }
+    },
+    "md.pricebands": {
+      "publish": {
+        "message": {
+          "name": "PriceBands"
+        }
+      }
+    },
+    "outbox.events": {
+      "publish": {
+        "message": {
+          "name": "OutboxEvent"
+        }
+      }
+    }
+  },
+  "components": {
+    "messages": {
+      "OrderPlaced": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "qty": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "RiskApproved": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RiskBlocked": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ExecRoute": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ExecReport": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string"
+            },
+            "execId": {
+              "type": "string"
+            },
+            "qty": {
+              "type": "integer"
+            },
+            "price": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "TradeBooked": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string"
+            },
+            "execId": {
+              "type": "string"
+            },
+            "qty": {
+              "type": "integer"
+            },
+            "price": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "PositionUpdated": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string"
+            },
+            "symbol": {
+              "type": "string"
+            },
+            "netQty": {
+              "type": "integer"
+            },
+            "avgPrice": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "Ltp": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "ltp": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "PriceBands": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "lower": {
+              "type": "number"
+            },
+            "upper": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "OutboxEvent": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "aggregateId": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

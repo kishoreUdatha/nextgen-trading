@@ -1,0 +1,47 @@
+{
+  "title": "Trading Platform - Kafka & OMS",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Consumer Lag (max)",
+      "targets": [
+        {
+          "expr": "max(kafka_consumergroup_lag)"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Orders Rate",
+      "targets": [
+        {
+          "expr": "sum(rate(oms_orders_placed_total[1m]))",
+          "legendFormat": "placed"
+        },
+        {
+          "expr": "sum(rate(oms_orders_rejected_total[1m]))",
+          "legendFormat": "rejected"
+        },
+        {
+          "expr": "sum(rate(oms_orders_filled_total[1m]))",
+          "legendFormat": "filled"
+        },
+        {
+          "expr": "sum(rate(oms_orders_cancelled_total[1m]))",
+          "legendFormat": "cancelled"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "JVM Heap",
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}

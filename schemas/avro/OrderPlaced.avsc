@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "OrderPlaced",
+  "namespace": "com.example.avro",
+  "fields": [
+    {
+      "name": "orderId",
+      "type": "string"
+    },
+    {
+      "name": "userId",
+      "type": "string"
+    },
+    {
+      "name": "symbol",
+      "type": "string"
+    },
+    {
+      "name": "qty",
+      "type": "int"
+    }
+  ]
+}

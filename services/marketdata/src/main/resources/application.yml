@@ -1,0 +1,18 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: marketdata
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}/marketdata_db
+    username: postgres
+    password: postgres
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka:9092}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+app:
+  topicPrefix: ${TOPIC_PREFIX:tp}

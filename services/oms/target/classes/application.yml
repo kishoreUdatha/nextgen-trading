@@ -1,0 +1,56 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: oms
+
+  datasource:
+    url: jdbc:postgresql://localhost:55432/trading_db?currentSchema=oms
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.default_schema: oms
+      hibernate.jdbc.time_zone: UTC
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: localhost:29092  # ✅ FIXED
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        linger.ms: 5
+        max.in.flight.requests.per.connection: 5
+    consumer:
+      group-id: oms
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+app:
+  topicPrefix: ${TOPIC_PREFIX:tp}
+  oms:
+    ioc-timeout-ms: 2000
+    day-end-cron: "0 0 10 * * *"
+  market:
+    openIst: "09:15"
+    closeIst: "15:30"
+    holidays: ["2025-01-26","2025-08-15"]

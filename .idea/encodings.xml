@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/libs/common-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-domain/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-events/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-events/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-messaging/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-messaging/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-security/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/libs/common-security/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/exec-adapter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/exec-adapter/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/marketdata/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/marketdata/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/oms/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/oms/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/outbox-dispatcher/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/outbox-dispatcher/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/poison-replayer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/poison-replayer/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/portfolio/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/portfolio/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/risk/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/risk/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/e2e/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/tests/e2e/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
