@@ -11,7 +11,7 @@ import com.example.oms.enums.Side;
 import com.example.oms.enums.TimeInForce;
 import com.example.oms.metrics.OmsMetrics;
 import com.example.oms.utils.LogFmt;
-import com.example.oms.ws.OrderStream;
+import com.example.oms.ws.OrderEventPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,17 +34,20 @@ public class OrderService {
     private final OmsMetrics metrics;
     private final String topicPrefix;
     private final SchemaValidator schemaValidator = new SchemaValidator();
+    private final OrderEventPublisher orderEventPublisher;
 
     public OrderService(OrderRepository orderRepository,
                         OutboxRepository outboxRepository,
                         ObjectMapper objectMapper,
                         OmsMetrics metrics,
-                        @Value("${app.topicPrefix:tp}") String topicPrefix) {
+                        @Value("${app.topicPrefix:tp}") String topicPrefix,
+                        OrderEventPublisher orderEventPublisher) {
         this.orderRepository = orderRepository;
         this.outboxRepository = outboxRepository;
         this.objectMapper = objectMapper;
         this.metrics = metrics;
         this.topicPrefix = topicPrefix;
+        this.orderEventPublisher = orderEventPublisher;
     }
 
     /**
@@ -103,7 +106,7 @@ public class OrderService {
             log.debug("metric.incremented {}", LogFmt.kv("name", "ordersPlaced", "delta", 1));
 
             // Fire-and-forget WS
-            OrderStream.ORDER_UPDATES.tryEmitNext(
+            orderEventPublisher.publishUpdate(
                     "{\"orderId\":\"" + orderId + "\",\"status\":\"NEW\"}");
             log.debug("ws.emitted {}", LogFmt.kv("orderId", orderId, "status", OrderStatus.NEW));
 

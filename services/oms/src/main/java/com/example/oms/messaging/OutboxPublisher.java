@@ -16,7 +16,7 @@ public class OutboxPublisher {
   public OutboxPublisher(OutboxRepository repo, KafkaTemplate<String,String> kafka){ this.repo=repo; this.kafka=kafka; }
 
   @Scheduled(fixedDelay = 1000)
-  @Transactional
+  @Transactional("kafkaTransactionManager")
   public void publishBatch(){
     List<OutboxEntity> batch = repo.findTop50ByPublishedAtIsNullOrderByCreatedAtAsc();
     for (OutboxEntity e : batch){

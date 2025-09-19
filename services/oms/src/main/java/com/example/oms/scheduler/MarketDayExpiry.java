@@ -4,7 +4,7 @@ import com.example.oms.config.MarketSession;
 import com.example.oms.domain.OrderEntity;
 import com.example.oms.domain.OrderRepository;
 import com.example.oms.enums.OrderStatus;
-import com.example.oms.ws.OrderStream;
+import com.example.oms.ws.OrderEventPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +23,11 @@ public class MarketDayExpiry {
     private final OrderRepository repo;
     private final MarketSession session;
     private final ObjectMapper om = new ObjectMapper();
+    private final OrderEventPublisher publisher;
 
-    public MarketDayExpiry(OrderRepository repo, MarketSession session) {
+    public MarketDayExpiry(OrderRepository repo, MarketSession session,OrderEventPublisher publisher) {
         this.repo = repo; this.session = session;
+        this.publisher = publisher;
     }
 
     // Check every minute; align to IST close and skip holidays
@@ -82,7 +84,7 @@ public class MarketDayExpiry {
                         .put("orderId", e.getId().toString())
                         .put("status", "EXPIRED")
                         .toString();
-                OrderStream.ORDER_UPDATES.tryEmitNext(msg);
+                publisher.publishUpdate(msg);
 
                 log.debug("Order expired & notified: id={}, updatedAt={}", e.getId(), e.getUpdatedAt());
                 expired++;

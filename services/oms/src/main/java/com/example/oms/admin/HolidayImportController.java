@@ -1,9 +1,10 @@
 package com.example.oms.admin;
 
 import com.example.oms.config.MarketSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -18,7 +19,7 @@ public class HolidayImportController {
   public HolidayImportController(MarketSession session){ this.session=session; }
 
   @PostMapping(value="/import", consumes = MediaType.TEXT_PLAIN_VALUE)
-  public Mono<Object> importCsv(@RequestBody String csv){
+  public ResponseEntity<Object> importCsv(@RequestBody String csv){
     Set<String> dates = new HashSet<>(session.getHolidays());
     try (BufferedReader br = new BufferedReader(new StringReader(csv))) {
       dates.addAll(br.lines()
@@ -28,6 +29,6 @@ public class HolidayImportController {
         .collect(Collectors.toSet()));
     } catch (Exception ignored){}
     session.setHolidays(dates.stream().sorted().toList());
-    return Mono.just(session.getHolidays());
+    return new ResponseEntity<>(session.getHolidays(), HttpStatus.OK);
   }
 }

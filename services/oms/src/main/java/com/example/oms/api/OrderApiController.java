@@ -4,10 +4,11 @@ import com.example.oms.request.PlaceOrderRequest;
 import com.example.oms.response.OrderResponse;
 import com.example.oms.utils.LogFmt;
 import jakarta.validation.constraints.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+
 
 import com.example.oms.service.OrderService;
 import com.example.oms.domain.OrderEntity;
@@ -57,7 +58,7 @@ public class OrderApiController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<?>> placeOrder(
+    public ResponseEntity<?> placeOrder(
             @RequestBody PlaceOrderRequest request,
             @RequestHeader(value="Idempotency-Key", required=false) String idempotencyKey) {
 
@@ -72,8 +73,8 @@ public class OrderApiController {
         ));
 
         if (isTradingOpen()) {
-            return Mono.just(ResponseEntity.unprocessableEntity()
-                    .body(Map.of("error", "MARKET_CLOSED")));
+            return ResponseEntity.unprocessableEntity()
+                    .body(Map.of("error", "MARKET_CLOSED"));
         }
 
         try {
@@ -95,13 +96,13 @@ public class OrderApiController {
                     "userId", entity.getUserId()
             ));
 
-            return Mono.just(ResponseEntity
+            return ResponseEntity
                     .created(URI.create("/api/v1/orders/" + entity.getId()))
                     .body(new OrderResponse(
                             entity.getId().toString(),
                             entity.getStatus().toString(),
                             entity.getCreatedAt()
-                    )));
+                    ));
         } catch (Exception ex) {
             log.error("order.api.failed {}", LogFmt.kv(
                     "symbol", request.symbol(),
@@ -110,15 +111,15 @@ public class OrderApiController {
                     "reason", ex.toString()
             ), ex);
 
-            return Mono.just(ResponseEntity.internalServerError()
-                    .body(Map.of("error", "ORDER_FAILED")));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "ORDER_FAILED"));
         }
     }
 
     @GetMapping("/{id}")
-    public Mono<OrderResponse> getOrder(@PathVariable String id) {
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable String id) {
         log.info("order.api.get {}", LogFmt.kv("orderId", id));
         // TODO: Replace with DB lookup
-        return Mono.just(new OrderResponse(id, "NEW", Instant.now()));
+        return new ResponseEntity<>(new OrderResponse(id, "NEW", Instant.now()), HttpStatus.OK);
     }
 }

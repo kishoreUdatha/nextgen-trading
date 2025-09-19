@@ -5,8 +5,8 @@ import com.example.oms.domain.OrderRepository;
 import com.example.oms.domain.OutboxEntity;
 import com.example.oms.domain.OutboxRepository;
 import com.example.oms.enums.OrderStatus;
-import com.example.oms.ws.OrderStream;
 import com.example.oms.metrics.OmsMetrics;
+import com.example.oms.ws.OrderEventPublisher;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,11 +27,15 @@ public class RiskDecisionConsumer {
   private final ObjectMapper om;
   private final String prefix;
   private final OmsMetrics metrics;
+  private final OrderEventPublisher orderEventPublisher;
 
   public RiskDecisionConsumer(OrderRepository orders, OutboxRepository outbox, ObjectMapper om,
                               OmsMetrics metrics,
-                              @Value("${app.topicPrefix:tp}") String prefix){
-    this.orders=orders; this.outbox=outbox; this.om=om; this.metrics=metrics; this.prefix=prefix;
+                              @Value("${app.topicPrefix:tp}") String prefix,
+                              OrderEventPublisher orderEventPublisher) {
+    this.orders=orders; this.outbox=outbox; this.om=om; this.metrics=metrics;
+    this.prefix=prefix;
+    this.orderEventPublisher=orderEventPublisher;
   }
 
   @KafkaListener(topics = "#{T(java.util.List).of('${app.topicPrefix:tp}.risk.approved')}")
@@ -61,7 +65,7 @@ public class RiskDecisionConsumer {
       ObjectNode n = om.createObjectNode()
               .put("orderId", e.getId().toString())
               .put("status", "ROUTED");
-      OrderStream.ORDER_UPDATES.tryEmitNext(n.toString());
+      orderEventPublisher.publishUpdate(n.toString());
   }
 
   @KafkaListener(topics = "#{T(java.util.List).of('${app.topicPrefix:tp}.risk.blocks')}")
@@ -78,6 +82,6 @@ public class RiskDecisionConsumer {
       ObjectNode n = om.createObjectNode()
               .put("orderId", e.getId().toString())
               .put("status", "REJECTED");
-      OrderStream.ORDER_UPDATES.tryEmitNext(n.toString());
+      orderEventPublisher.publishUpdate(n.toString());
   }
 }

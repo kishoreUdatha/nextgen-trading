@@ -40,7 +40,7 @@ public class KafkaTxConfig {
     return kt;
   }
 
-  @Bean
+  @Bean(name = "kafkaTransactionManager")
   public KafkaTransactionManager<String,String> kafkaTransactionManager(ProducerFactory<String,String> pf){
     KafkaTransactionManager<String,String> tm = new KafkaTransactionManager<>(pf);
     return tm;

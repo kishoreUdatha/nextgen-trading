@@ -1,9 +1,10 @@
 package com.example.oms.api;
 
 import com.example.oms.config.MarketSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 import java.time.*;
 
 record MarketStatus(boolean open, String openIst, String closeIst){}
@@ -15,7 +16,7 @@ public class MarketStatusApi {
   public MarketStatusApi(MarketSession session){ this.session=session; }
 
   @GetMapping("/status")
-  public Mono<MarketStatus> status(){
+  public ResponseEntity<MarketStatus> status(){
     ZoneId ist = ZoneId.of("Asia/Kolkata");
     LocalDate d = LocalDate.now(ist);
     LocalTime now = LocalTime.now(ist);
@@ -23,6 +24,6 @@ public class MarketStatusApi {
     LocalTime open = LocalTime.parse(session.getOpenIst());
     LocalTime close = LocalTime.parse(session.getCloseIst());
     boolean openNow = !holiday && !now.isBefore(open) && !now.isAfter(close);
-    return Mono.just(new MarketStatus(openNow, session.getOpenIst(), session.getCloseIst()));
+    return new ResponseEntity<>(new MarketStatus(openNow, session.getOpenIst(), session.getCloseIst()), HttpStatus.OK);
   }
 }
