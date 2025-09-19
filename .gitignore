@@ -1,0 +1,22 @@
+# Maven / Gradle build outputs
+target/
+build/
+out/
+
+# Compiled class files
+*.class
+
+# JARs, WARs, EARs
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+
+# IDE-specific
+.idea/
+*.iml
+.vscode/
+*.project
+*.classpath
